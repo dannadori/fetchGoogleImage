@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-import sys, re, os, urllib
+import sys, re, os, urllib, urllib.request
+from time import sleep
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.common.keys import Keys
 
@@ -8,6 +9,10 @@ driver_path = os.environ["WEBDRIVER_PATH"]
 
 def getImageURLs(driver, query):
         driver.get('https://www.google.co.jp/search?q=%s&tbm=isch'% query)
+        for i in range(1,3):
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                sleep(5)
+
         pattern = '"ou":"(.*?)"'
         src=driver.page_source
         urls=re.findall(pattern, src)
@@ -28,6 +33,10 @@ def downloadImage(url, path):
                 print(e)
         except UnicodeEncodeError as e:
                 print(e)
+        except :
+                import traceback
+                traceback.print_exc()
+
                 
 if __name__ == '__main__':
         args = sys.argv
@@ -41,8 +50,16 @@ if __name__ == '__main__':
         options.add_argument('--headless')
         driver = Chrome(driver_path, options=options)
         list=getImageURLs(driver=driver, query=query)
-        for i,u in enumerate(list):
-                print(u)
-                downloadImage(u, "{0}/{1:04}".format(folder,i))
+        print("-------- Image URL to be fetched ---------")
+        for v in list:
+                print(v)
+        print("------------------------------------------")
+
+
+
+        for i,url in enumerate(list):
+                print("[{}] Download: {}".format(i, url))
+                downloadImage(url, "{0}/{1:04}".format(folder,i))
+                print("")
         driver.quit() 
             
